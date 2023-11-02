@@ -7,11 +7,11 @@ import pygame, sys, random
 from pygame.locals import *
 
 # Create the constants (go ahead and experiment with different values)
-BOARDWIDTH = 4  # number of columns in the board
-BOARDHEIGHT = 4 # number of rows in the board
+BOARDWIDTH = 8  # number of columns in the board
+BOARDHEIGHT = 8 # number of rows in the board
 TILESIZE = 80
-WINDOWWIDTH = 640
-WINDOWHEIGHT = 480
+WINDOWWIDTH = 1000
+WINDOWHEIGHT = 720
 FPS = 30
 BLANK = None
 
@@ -39,8 +39,6 @@ UP = 'up'
 DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
-
-SPEED = 30
 
 def main():
     global UNDO_SURF, UNDO_RECT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
