@@ -40,8 +40,10 @@ DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
 
+SPEED = 30
+
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
+    global UNDO_SURF, UNDO_RECT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
 
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
@@ -50,6 +52,7 @@ def main():
     BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
 
     # Store the option buttons and their rectangles in OPTIONS.
+    UNDO_SURF, UNDO_RECT = makeText('Undo', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 150)
     RESET_SURF, RESET_RECT = makeText('Reset',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 90)
     NEW_SURF,   NEW_RECT   = makeText('New Game', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 60)
     SOLVE_SURF, SOLVE_RECT = makeText('Solve',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 30)
@@ -82,6 +85,12 @@ def main():
                     elif SOLVE_RECT.collidepoint(event.pos):
                         resetAnimation(mainBoard, solutionSeq + allMoves) # clicked on Solve button
                         allMoves = []
+                    if UNDO_RECT.collidepoint(event.pos):
+                        if allMoves:
+                            lastMove = allMoves.pop()
+                            oppositeMove = getOppositeMove(lastMove)
+                            slideAnimation(mainBoard, oppositeMove, 'Undoing last move...', animationSpeed=int(TILESIZE / 3))
+                            makeMove(mainBoard, oppositeMove)
                 else:
                     # check if the clicked tile was next to the blank spot
 
@@ -107,7 +116,7 @@ def main():
                     slideTo = DOWN
 
         if slideTo:
-            slideAnimation(mainBoard, slideTo, 'Click tile or press arrow keys to slide.', 8) # show slide on screen
+            slideAnimation(mainBoard, slideTo, 'Click tile or press arrow keys to slide.', animationSpeed=int(TILESIZE / 3)) # show slide on screen
             makeMove(mainBoard, slideTo)
             allMoves.append(slideTo) # record the slide
         pygame.display.update()
@@ -246,6 +255,7 @@ def drawBoard(board, message):
     height = BOARDHEIGHT * TILESIZE
     pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (left - 5, top - 5, width + 11, height + 11), 4)
 
+    DISPLAYSURF.blit(UNDO_SURF, UNDO_RECT)
     DISPLAYSURF.blit(RESET_SURF, RESET_RECT)
     DISPLAYSURF.blit(NEW_SURF, NEW_RECT)
     DISPLAYSURF.blit(SOLVE_SURF, SOLVE_RECT)
@@ -327,6 +337,15 @@ def resetAnimation(board, allMoves):
         slideAnimation(board, oppositeMove, '', animationSpeed=int(TILESIZE / 2))
         makeMove(board, oppositeMove)
 
+def getOppositeMove(move):
+    if move == UP:
+        return DOWN
+    elif move == DOWN:
+        return UP
+    elif move == LEFT:
+        return RIGHT
+    elif move == RIGHT:
+        return LEFT
 
 if __name__ == '__main__':
     main()
