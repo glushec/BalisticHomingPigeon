@@ -7,11 +7,11 @@ import pygame, sys, random
 from pygame.locals import *
 
 # Create the constants (go ahead and experiment with different values)
-BOARDWIDTH = 8  # number of columns in the board
-BOARDHEIGHT = 8 # number of rows in the board
+BOARDWIDTH = 8  # number of columns in the board  ################################# smeneto vo 8
+BOARDHEIGHT = 8 # number of rows in the board   ################################# smeneto vo 8
 TILESIZE = 80
-WINDOWWIDTH = 1000
-WINDOWHEIGHT = 720
+WINDOWWIDTH = 1000  ################################# smenati vrednosti na pozorecot za da gi prikaze elementite vo celost
+WINDOWHEIGHT = 720  ################################# smenati vrednosti na pozorecot za da gi prikaze elementite vo celost
 FPS = 30
 BLANK = None
 
@@ -42,6 +42,7 @@ RIGHT = 'right'
 
 def main():
     global UNDO_SURF, UNDO_RECT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
+    ######################### na linijata pogore definirani UNDO_SURF, UNDO_RECT 
 
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
@@ -50,7 +51,7 @@ def main():
     BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
 
     # Store the option buttons and their rectangles in OPTIONS.
-    UNDO_SURF, UNDO_RECT = makeText('Undo', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 150)
+    UNDO_SURF, UNDO_RECT = makeText('Undo', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 150) ############################### definiran UNDO button
     RESET_SURF, RESET_RECT = makeText('Reset',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 90)
     NEW_SURF,   NEW_RECT   = makeText('New Game', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 60)
     SOLVE_SURF, SOLVE_RECT = makeText('Solve',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 30)
@@ -83,12 +84,14 @@ def main():
                     elif SOLVE_RECT.collidepoint(event.pos):
                         resetAnimation(mainBoard, solutionSeq + allMoves) # clicked on Solve button
                         allMoves = []
+
+                    ############################### dodadena proverka za UNDO
                     if UNDO_RECT.collidepoint(event.pos):
-                        if allMoves:
-                            lastMove = allMoves.pop()
-                            oppositeMove = getOppositeMove(lastMove)
-                            slideAnimation(mainBoard, oppositeMove, 'Undoing last move...', animationSpeed=int(TILESIZE / 3))
-                            makeMove(mainBoard, oppositeMove)
+                        if allMoves: ######################### proverka dali voopsto postoi napraven cekor
+                            lastMove = allMoves.pop() ##################### brisenje na nasiot posleden cekor
+                            oppositeMove = getOppositeMove(lastMove) ##################### definiran obraten cekor od nasiot posleden cekor
+                            slideAnimation(mainBoard, oppositeMove, 'Undoing last move...', animationSpeed=int(TILESIZE / 3)) ################ UNDO animacija
+                            makeMove(mainBoard, oppositeMove) ################# dodaden UNDO cekorot kako posleden cekor
                 else:
                     # check if the clicked tile was next to the blank spot
 
@@ -253,7 +256,7 @@ def drawBoard(board, message):
     height = BOARDHEIGHT * TILESIZE
     pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (left - 5, top - 5, width + 11, height + 11), 4)
 
-    DISPLAYSURF.blit(UNDO_SURF, UNDO_RECT)
+    DISPLAYSURF.blit(UNDO_SURF, UNDO_RECT) ######################### crtanje na UNDO button
     DISPLAYSURF.blit(RESET_SURF, RESET_RECT)
     DISPLAYSURF.blit(NEW_SURF, NEW_RECT)
     DISPLAYSURF.blit(SOLVE_SURF, SOLVE_RECT)
@@ -335,6 +338,7 @@ def resetAnimation(board, allMoves):
         slideAnimation(board, oppositeMove, '', animationSpeed=int(TILESIZE / 2))
         makeMove(board, oppositeMove)
 
+#################### funkcija sto vrakja obraten cekor od nasiot posleden cekor
 def getOppositeMove(move):
     if move == UP:
         return DOWN
