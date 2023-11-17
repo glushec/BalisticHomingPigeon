@@ -5,15 +5,24 @@
 
 import random, pygame, sys
 from pygame.locals import *
+# dodavanje novi biblioteki za message box
+import tkinter
+from tkinter import messagebox
 
-FPS = 30 # frames per second, the general speed of the program
-WINDOWWIDTH = 640 # size of window's width in pixels
-WINDOWHEIGHT = 480 # size of windows' height in pixels
+# promena na generalnata brzina na programata
+FPS = 14 # frames per second, the general speed of the program
+# promena na shirinata na prozorecot na koj se prikazuva igrata
+WINDOWWIDTH = 840 # size of window's width in pixels
+# promena na visinata na prozorecot na koj se prikazuva igrata
+WINDOWHEIGHT = 700 # size of windows' height in pixels
 REVEALSPEED = 8 # speed boxes' sliding reveals and covers
-BOXSIZE = 40 # size of box height & width in pixels
+# promena na goleminata na polinjata vo pikseli
+BOXSIZE = 60 # size of box height & width in pixels
 GAPSIZE = 10 # size of gap between boxes in pixels
-BOARDWIDTH = 3 # number of columns of icons
-BOARDHEIGHT = 4 # number of rows of icons
+# promena na brojot na koloni
+BOARDWIDTH = 8 # number of columns of icons
+# promena na brojot na redici
+BOARDHEIGHT = 8 # number of rows of icons
 assert (BOARDWIDTH * BOARDHEIGHT) % 2 == 0, 'Board needs to have an even number of boxes for pairs of matches.'
 XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * (BOXSIZE + GAPSIZE))) / 2)
 YMARGIN = int((WINDOWHEIGHT - (BOARDHEIGHT * (BOXSIZE + GAPSIZE))) / 2)
@@ -35,10 +44,6 @@ LIGHTBGCOLOR = GRAY
 BOXCOLOR = WHITE
 HIGHLIGHTCOLOR = BLUE
 
-BASICFONTSIZE = 20
-
-
-
 DONUT = 'donut'
 SQUARE = 'square'
 DIAMOND = 'diamond'
@@ -50,7 +55,7 @@ ALLSHAPES = (DONUT, SQUARE, DIAMOND, LINES, OVAL)
 assert len(ALLCOLORS) * len(ALLSHAPES) * 2 >= BOARDWIDTH * BOARDHEIGHT, "Board is too big for the number of shapes/colors defined."
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, HINT_SURF, HINT_RECT, BASICFONT
+    global FPSCLOCK, DISPLAYSURF
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
@@ -63,9 +68,6 @@ def main():
     revealedBoxes = generateRevealedBoxesData(False)
 
     firstSelection = None # stores the (x, y) of the first box clicked.
-
-    BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
-    HINT_SURF, HINT_RECT = makeText('HINT', WHITE, NAVYBLUE, WINDOWWIDTH - 120, WINDOWHEIGHT - 150)
 
     DISPLAYSURF.fill(BGCOLOR)
     startGameAnimation(mainBoard)
@@ -82,14 +84,9 @@ def main():
                 sys.exit()
             elif event.type == MOUSEMOTION:
                 mousex, mousey = event.pos
-            
             elif event.type == MOUSEBUTTONUP:
                 mousex, mousey = event.pos
                 mouseClicked = True
-
-                if HINT_RECT.collidepoint(mousex, mousey):
-                    showHint(mainBoard, revealedBoxes)
-                  
 
         boxx, boxy = getBoxAtPixel(mousex, mousey)
         if boxx != None and boxy != None:
@@ -255,8 +252,6 @@ def drawBoard(board, revealed):
                 # Draw the (revealed) icon.
                 shape, color = getShapeAndColor(board, boxx, boxy)
                 drawIcon(shape, color, boxx, boxy)
-    
-    DISPLAYSURF.blit(HINT_SURF, HINT_RECT)
 
 
 def drawHighlightBox(boxx, boxy):
@@ -272,7 +267,9 @@ def startGameAnimation(board):
         for y in range(BOARDHEIGHT):
             boxes.append( (x, y) )
     random.shuffle(boxes)
-    boxGroups = splitIntoGroupsOf(8, boxes)
+    # promena na prviot parametar na fukncijata splitIntoGroupsOf, za da se prikazat site polinja odednash
+    # i vednas potoa site da se zatvorat
+    boxGroups = splitIntoGroupsOf(64, boxes)
 
     drawBoard(board, coveredBoxes)
     for boxGroup in boxGroups:
@@ -281,32 +278,25 @@ def startGameAnimation(board):
 
 
 def gameWonAnimation(board):
-    # Display a flickering red and blue overlay with the text "YOU WON!" over the entire window when the player wins.
+    # flash the background color when the player has won
     coveredBoxes = generateRevealedBoxesData(True)
+    color1 = LIGHTBGCOLOR
+    color2 = BGCOLOR
 
-    # Initialize Pygame's font module
-    pygame.font.init()
-    font = pygame.font.SysFont(None, 96)  # Increased font size
+    # kreiranje na message box - ot otkako igrachot kje pobedi
+    root = tkinter.Tk()
+    root.withdraw()
+    # Message Box
+    messagebox.showinfo("Message Box", "Congratulations!")
 
-    for i in range(10):  # overlay flicker between red and blue. adjust as needed
-        drawBoard(board, coveredBoxes)  # Draw the board first
+    for i in range(13):
+        color1, color2 = color2, color1 # swap colors
 
-        if i % 2 == 0:
-            overlayColor = (255, 0, 0, 128)  # Red color with alpha set to 128 (50% opacity)
-        else:
-            overlayColor = (0, 0, 255, 128)  # Blue color with alpha set to 128 (50% opacity)
-
-        overlay_surface = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT), pygame.SRCALPHA)
-        overlay_surface.fill(overlayColor)
-        DISPLAYSURF.blit(overlay_surface, (0, 0))
-
-        # Render the "YOU WON!" text onto a surface
-        text_surface = font.render("YOU WON!", True, WHITE)
-        text_rect = text_surface.get_rect(center=(WINDOWWIDTH // 2, WINDOWHEIGHT // 2 - 150))  # Adjusted Y position
-        DISPLAYSURF.blit(text_surface, text_rect)
+        DISPLAYSURF.fill(color1)
+        drawBoard(board, coveredBoxes)
 
         pygame.display.update()
-        pygame.time.wait(300)  # Original wait time
+        pygame.time.wait(300)
 
 
 def hasWon(revealedBoxes):
@@ -316,48 +306,6 @@ def hasWon(revealedBoxes):
             return False # return False if any boxes are covered.
     return True
 
-def makeText(text, color, bgcolor, top, left):
-    # create the Surface and Rect objects for some text.
-    textSurf = BASICFONT.render(text, True, color, bgcolor)
-    textRect = textSurf.get_rect()
-    textRect.topleft = (top, left)
-    return (textSurf, textRect)
-
-def highlightHintPair(hint_pair):
-    for box in hint_pair:
-        boxx, boxy = box
-        # Apply your highlighting logic (e.g., change border color, apply glow effect)
-        # You might want to use a timer to revert the highlighting after a short duration
-        left, top = leftTopCoordsOfBox(boxx, boxy)
-        pygame.draw.rect(DISPLAYSURF, HIGHLIGHTCOLOR, (left - 5, top - 5, BOXSIZE + 10, BOXSIZE + 10), 4)
-
-# Function to find a matching pair for a hint
-def findMatchingPairForHint(board, revealed):
-    for x in range(BOARDWIDTH):
-        for y in range(BOARDHEIGHT):
-            if not revealed[x][y]:
-                # If the box is not revealed, check if revealing it would form a matching pair
-                temp_revealed = [row[:] for row in revealed]  # Create a temporary revealed state
-                temp_revealed[x][y] = True
-                for i in range(BOARDWIDTH):
-                    for j in range(BOARDHEIGHT):
-                        if not temp_revealed[i][j]:
-                            # If another unrevealed box is found, check if it forms a pair
-                            if board[x][y] == board[i][j]:
-                                return [(x, y), (i, j)]  # Matching pair found
-    return None  # No matching pair found
-
-# Function to show a hint
-def showHint(board, revealed):
-    # Find a matching pair for a hint
-    hint_pair = findMatchingPairForHint(board, revealed)
-    if hint_pair:
-        # Temporarily highlight the hint pair
-        highlightHintPair(hint_pair)
-        # You might also deduct points or use some other mechanism to limit hints
-    else:
-        # No matching pair found, handle accordingly (e.g., display a message)
-        print("No matching pair found")
 
 if __name__ == '__main__':
     main()
