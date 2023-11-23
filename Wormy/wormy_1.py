@@ -4,12 +4,18 @@
 # Released under a "Simplified BSD" license
 
 import random, pygame, sys
+import time
+
 from pygame.locals import *
 
-FPS = 8
+#Promena na brzinata
+FPS = 7
+
+# Promena na shirinata i visochinata na window
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
-CELLSIZE = 20
+# Promena na goleminata na cells
+CELLSIZE = 10
 assert WINDOWWIDTH % CELLSIZE == 0, "Window width must be a multiple of cell size."
 assert WINDOWHEIGHT % CELLSIZE == 0, "Window height must be a multiple of cell size."
 CELLWIDTH = int(WINDOWWIDTH / CELLSIZE)
@@ -20,6 +26,10 @@ WHITE     = (255, 255, 255)
 BLACK     = (  0,   0,   0)
 RED       = (255,   0,   0)
 GREEN     = (  0, 255,   0)
+YELLOW    = (241, 255,  12)
+BLUE      = ( 91, 175, 247)
+DARKBLUE  = (  7,  86, 154)
+DARKYELLOW= (247, 202,  91)
 DARKGREEN = (  0, 155,   0)
 DARKGRAY  = ( 40,  40,  40)
 BGCOLOR = BLACK
@@ -31,8 +41,15 @@ RIGHT = 'right'
 
 HEAD = 0 # syntactic sugar: index of the worm's head
 
+# Definiranje nov event za zgolemuvanje na brzinata na igrata na sekoi 30 sekundi
+SPEED_EVENT = pygame.USEREVENT
+# Definiranje na zolto jabolko
+YELLOW_APPLE_EVENT = pygame.USEREVENT
+BLUE_APPLE_EVENT = pygame.USEREVENT
+
+
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, FPS, start, stop
 
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
@@ -48,6 +65,11 @@ def main():
 
 def runGame():
     # Set a random start point.
+    global FPS
+    # Postavuvanje timer
+    pygame.time.set_timer(SPEED_EVENT, 30000)
+    pygame.time.set_timer(YELLOW_APPLE_EVENT, 10000)
+
     startx = random.randint(5, CELLWIDTH - 6)
     starty = random.randint(5, CELLHEIGHT - 6)
     wormCoords = [{'x': startx,     'y': starty},
@@ -58,10 +80,20 @@ def runGame():
     # Start the apple in a random place.
     apple = getRandomLocation()
 
+    QUIT_SURF, QUIT_RECT = makeText('QUIT', RED, GREEN, WINDOWWIDTH - 120, WINDOWHEIGHT - 90)
+    NEW_SURF, NEW_RECT = makeText('Restart', RED, GREEN, WINDOWWIDTH - 120, WINDOWHEIGHT - 60)
+
     while True: # main game loop
+
+        DISPLAYSURF.blit(QUIT_SURF, QUIT_RECT)
+        DISPLAYSURF.blit(NEW_SURF, NEW_RECT)
         for event in pygame.event.get(): # event handling loop
             if event.type == QUIT:
                 terminate()
+                # Zgolemuvanje na brzinata na igrata za 7 na sekoi 30 sekundi
+            elif event.type == SPEED_EVENT:
+                FPS += 7
+                drawWorm(wormCoords)
             elif event.type == KEYDOWN:
                 if (event.key == K_LEFT or event.key == K_a) and direction != RIGHT:
                     direction = LEFT
@@ -127,8 +159,9 @@ def checkForKeyPress():
 
 def showStartScreen():
     titleFont = pygame.font.Font('freesansbold.ttf', 100)
-    titleSurf1 = titleFont.render('Wormy!', True, WHITE, DARKGREEN)
-    titleSurf2 = titleFont.render('Wormy!', True, GREEN)
+    # Promena na boite na pochetniot ekran
+    titleSurf1 = titleFont.render('Wormy!', True, WHITE, DARKYELLOW)
+    titleSurf2 = titleFont.render('Wormy!', True, BLUE)
 
     degrees1 = 0
     degrees2 = 0
@@ -166,8 +199,13 @@ def getRandomLocation():
 
 def showGameOverScreen():
     gameOverFont = pygame.font.Font('freesansbold.ttf', 150)
-    gameSurf = gameOverFont.render('Game', True, WHITE)
-    overSurf = gameOverFont.render('Over', True, WHITE)
+    #gameSurf = gameOverFont.render('Game', True, WHITE)
+    #overSurf = gameOverFont.render('Over', True, WHITE)
+
+    # Promena na bojata na GAME OVER
+    gameSurf = gameOverFont.render('Game', True, BLUE)
+    overSurf = gameOverFont.render('Over', True, BLUE)
+
     gameRect = gameSurf.get_rect()
     overRect = overSurf.get_rect()
     gameRect.midtop = (WINDOWWIDTH / 2, 10)
@@ -209,12 +247,33 @@ def drawApple(coord):
     pygame.draw.rect(DISPLAYSURF, RED, appleRect)
 
 
+def drawYellowApple(coord):
+    x = coord['x'] * CELLSIZE
+    y = coord['y'] * CELLSIZE
+    appleRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+    pygame.draw.rect(DISPLAYSURF, YELLOW, appleRect)
+
+def drawBlueApple(coord):
+    x = coord['x'] * CELLSIZE
+    y = coord['y'] * CELLSIZE
+    appleRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+    pygame.draw.rect(DISPLAYSURF, BLUE, appleRect)
+
+
+
 def drawGrid():
     for x in range(0, WINDOWWIDTH, CELLSIZE): # draw vertical lines
         pygame.draw.line(DISPLAYSURF, DARKGRAY, (x, 0), (x, WINDOWHEIGHT))
     for y in range(0, WINDOWHEIGHT, CELLSIZE): # draw horizontal lines
         pygame.draw.line(DISPLAYSURF, DARKGRAY, (0, y), (WINDOWWIDTH, y))
 
+# Kreiranje nova funkcija
+def makeText(text, color, bgcolor, top, left):
+    # create the Surface and Rect objects for some text.
+    textSurf = BASICFONT.render(text, True, color, bgcolor)
+    textRect = textSurf.get_rect()
+    textRect.topleft = (top, left)
+    return (textSurf, textRect)
 
 if __name__ == '__main__':
     main()
