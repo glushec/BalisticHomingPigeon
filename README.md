@@ -1,2 +1,0 @@
-# gluposti
-gluposti

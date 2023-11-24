@@ -176,11 +176,32 @@ def showGameOverScreen():
     DISPLAYSURF.blit(gameSurf, gameRect)
     DISPLAYSURF.blit(overSurf, overRect)
     drawPressKeyMsg()
+
+    # kreiranje QUIT button
+    QUIT_SURF, QUIT_RECT = makeText('QUIT', RED, GREEN, WINDOWWIDTH - 120, WINDOWHEIGHT - 90)
+    DISPLAYSURF.blit(QUIT_SURF, QUIT_RECT)
+
+    # kreiranje New Game button
+    NEW_SURF, NEW_RECT = makeText('New Game', RED, GREEN, WINDOWWIDTH - 120, WINDOWHEIGHT - 60)
+    DISPLAYSURF.blit(NEW_SURF, NEW_RECT)
+
     pygame.display.update()
     pygame.time.wait(500)
     checkForKeyPress() # clear out any key presses in the event queue
 
     while True:
+        mouse_pos = pygame.mouse.get_pos() # tracking na pozicijata na mouse kursorot
+
+        for event in pygame.event.get(): # for loop za fakjanje eventi
+            if event.type == QUIT:
+                terminate()
+            elif event.type == MOUSEBUTTONDOWN: # proverka dali e kliknato kopce
+                if QUIT_RECT.collidepoint(mouse_pos): # ako e kliknat quit button se isklucuva igrata
+                    terminate()
+                if NEW_RECT.collidepoint(mouse_pos): # ako e kliknat new game button se restartira igrata
+                    pygame.event.get()
+                    return
+
         if checkForKeyPress():
             pygame.event.get() # clear event queue
             return
@@ -215,6 +236,31 @@ def drawGrid():
     for y in range(0, WINDOWHEIGHT, CELLSIZE): # draw horizontal lines
         pygame.draw.line(DISPLAYSURF, DARKGRAY, (0, y), (WINDOWWIDTH, y))
 
+# Kreiranje nova funkcija za ispishuvanje tekst
+def makeText(text, color, bgcolor, top, left):
+    # create the Surface and Rect objects for some text.
+    textSurf = BASICFONT.render(text, True, color, bgcolor)
+    textRect = textSurf.get_rect()
+    textRect.topleft = (top, left)
+    return (textSurf, textRect)
+
+def drawFlickeringApple(coord, wormCoords):
+    x = coord['x'] * CELLSIZE
+    y = coord['y'] * CELLSIZE
+    flickeringAppleRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+
+    # Check if wormCoords list is not empty
+    if wormCoords:
+        # Check if the head of the worm has the same coordinates as the flickering apple
+        if (
+            wormCoords[HEAD]['x'] == coord['x']
+            and wormCoords[HEAD]['y'] == coord['y']
+        ):
+            coord = getRandomLocation()  # set a new flickering apple somewhere
+
+    current_time = pygame.time.get_ticks()  # get the current time in milliseconds
+    if current_time % 10000 < 5000:  # flicker for 5 seconds, then hide for 5 seconds
+        pygame.draw.rect(DISPLAYSURF, RED, flickeringAppleRect)
 
 if __name__ == '__main__':
     main()
