@@ -38,12 +38,12 @@ YMARGIN = int((WINDOWHEIGHT - (2 * BUTTONSIZE) - BUTTONGAPSIZE) / 2)
 
 # Rect objects for each of the four buttons
 YELLOWRECT = pygame.Rect(XMARGIN, YMARGIN, BUTTONSIZE, BUTTONSIZE)
-BLUERECT   = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN, BUTTONSIZE, BUTTONSIZE)
-REDRECT    = pygame.Rect(XMARGIN, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
-GREENRECT  = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
+BLUERECT = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN, BUTTONSIZE, BUTTONSIZE)
+REDRECT = pygame.Rect(XMARGIN, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
+GREENRECT = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4, patternChanges, GRID_WIDTH, GRID_HEIGHT, TIMEOUT, WINDOWWIDTH, WINDOWHEIGHT, XMARGIN, YMARGIN, YELLOWRECT, BLUERECT, REDRECT, GREENRECT, NEWRECT1, NEWRECT2, NEWRECT3, NEWRECT4, NEWRECT5, DIMENSION, BUTTON_COLORS
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4, patternChanges, GRID_WIDTH, GRID_HEIGHT, TIMEOUT, WINDOWWIDTH, WINDOWHEIGHT, XMARGIN, YMARGIN, YELLOWRECT, BLUERECT, REDRECT, GREENRECT, BUTTON_COLORS
 
     GRID_WIDTH = 2  # Set the initial grid width
     GRID_HEIGHT = 2  # Set the initial grid height
@@ -100,8 +100,6 @@ def main():
                 elif event.key == K_s:
                     clickedButton = GREEN
 
-
-
         if not waitingForInput:
             # play the pattern
             pygame.display.update()
@@ -119,45 +117,12 @@ def main():
             waitingForInput = True
 
             # проверка за дали е време таблата да се зголеми
-            if score % 10 == 0 and score != 0:
-                # зголемување на димензиите и просторот
-                DIMENSION += 1
-                GRID_WIDTH += 1
-                GRID_HEIGHT += 1
-                WINDOWWIDTH = 640 + (DIMENSION - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
-                WINDOWHEIGHT = 480 + (DIMENSION - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
-                global NEWRECT1, NEWRECT2, NEWRECT3, NEWRECT4, NEWRECT5
-
-                NEWRECT1 = pygame.Rect(
-                    XMARGIN - BUTTONSIZE - BUTTONGAPSIZE,
-                    YMARGIN - BUTTONSIZE - BUTTONGAPSIZE,
-                    BUTTONSIZE,
-                    BUTTONSIZE,
-                )
-                NEWRECT2 = pygame.Rect(
-                    XMARGIN + BUTTONSIZE + BUTTONGAPSIZE,
-                    YMARGIN - BUTTONSIZE - BUTTONGAPSIZE,
-                    BUTTONSIZE,
-                    BUTTONSIZE,
-                )
-                NEWRECT3 = pygame.Rect(
-                    XMARGIN,
-                    YMARGIN - BUTTONSIZE - BUTTONGAPSIZE,
-                    BUTTONSIZE,
-                    BUTTONSIZE,
-                )
-                NEWRECT4 = pygame.Rect(
-                    XMARGIN - BUTTONSIZE - BUTTONGAPSIZE,
-                    YMARGIN + BUTTONSIZE + BUTTONGAPSIZE,
-                    BUTTONSIZE,
-                    BUTTONSIZE,
-                )
-                NEWRECT5 = pygame.Rect(
-                    XMARGIN - BUTTONSIZE - BUTTONGAPSIZE,
-                    YMARGIN,
-                    BUTTONSIZE,
-                    BUTTONSIZE,
-                )
+            if score >= 4:
+                GRID_WIDTH = 3
+                GRID_HEIGHT = 3
+                WINDOWWIDTH = 640 + (GRID_WIDTH - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
+                WINDOWHEIGHT = 480 + (GRID_HEIGHT - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
+                BUTTON_COLORS = generateButtonColors()
 
         else:
             # чување на обратниот редослед
@@ -256,7 +221,6 @@ def drawButtons():
             pygame.draw.rect(DISPLAYSURF, BUTTON_COLORS[row * GRID_WIDTH + col], buttonRect)
 
 
-
 def changeBackgroundAnimation(animationSpeed=40):
     global bgColor
     newBgColor = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -301,7 +265,6 @@ def gameOverAnimation(color=WHITE, animationSpeed=50):
                 drawButtons()
                 pygame.display.update()
                 FPSCLOCK.tick(FPS)
-
 
 
 def getButtonClicked(x, y):
