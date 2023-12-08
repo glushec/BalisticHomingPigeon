@@ -43,12 +43,8 @@ REDRECT    = pygame.Rect(XMARGIN, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSI
 GREENRECT  = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4, patternChanges, GRID_WIDTH, GRID_HEIGHT, TIMEOUT, WINDOWWIDTH, WINDOWHEIGHT, XMARGIN, YMARGIN, YELLOWRECT, BLUERECT, REDRECT, GREENRECT, NEWRECT1, NEWRECT2, NEWRECT3, NEWRECT4, NEWRECT5, DIMENSION, BUTTON_COLORS
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4, patternChanges, GRID_WIDTH, GRID_HEIGHT, TIMEOUT, WINDOWWIDTH, WINDOWHEIGHT, XMARGIN, YMARGIN, YELLOWRECT, BLUERECT, REDRECT, GREENRECT, NEWRECT1, NEWRECT2, NEWRECT3, NEWRECT4, NEWRECT5, DIMENSION
 
-    GRID_WIDTH = 3  # Set the initial grid width
-    GRID_HEIGHT = 3  # Set the initial grid height
-    BUTTON_COLORS = generateButtonColors()
-    
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
@@ -122,8 +118,6 @@ def main():
             if score % 10 == 0 and score != 0:
                 # зголемување на димензиите и просторот
                 DIMENSION += 1
-                GRID_WIDTH += 1
-                GRID_HEIGHT += 1
                 WINDOWWIDTH = 640 + (DIMENSION - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
                 WINDOWHEIGHT = 480 + (DIMENSION - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
                 global NEWRECT1, NEWRECT2, NEWRECT3, NEWRECT4, NEWRECT5
@@ -175,13 +169,10 @@ def main():
                     changeBackgroundAnimation()
                     score += 1
                     waitingForInput = False
-                    currentStep = 0  # reset back to first step
+                    currentStep = 0 # reset back to first step
 
             # изменета проверка со новата листа
-            elif (
-                (clickedButton and clickedButton != reversedPattern[currentStep])
-                or (currentStep != 0 and time.time() - TIMEOUT > lastClickTime)
-            ):
+            elif (clickedButton and clickedButton != reversedPattern[currentStep]) or (currentStep != 0 and time.time() - TIMEOUT > lastClickTime):
                 # pushed the incorrect button, or has timed out
                 gameOverAnimation()
                 # reset the variables for a new game:
@@ -245,16 +236,10 @@ def flashButtonAnimation(color, animationSpeed=50):
 
 
 def drawButtons():
-    for row in range(GRID_HEIGHT):
-        for col in range(GRID_WIDTH):
-            buttonRect = pygame.Rect(
-                XMARGIN + col * (BUTTONSIZE + BUTTONGAPSIZE),
-                YMARGIN + row * (BUTTONSIZE + BUTTONGAPSIZE),
-                BUTTONSIZE,
-                BUTTONSIZE,
-            )
-            pygame.draw.rect(DISPLAYSURF, BUTTON_COLORS[row * GRID_WIDTH + col], buttonRect)
-
+    pygame.draw.rect(DISPLAYSURF, YELLOW, YELLOWRECT)
+    pygame.draw.rect(DISPLAYSURF, BLUE,   BLUERECT)
+    pygame.draw.rect(DISPLAYSURF, RED,    REDRECT)
+    pygame.draw.rect(DISPLAYSURF, GREEN,  GREENRECT)
 
 
 def changeBackgroundAnimation(animationSpeed=40):
@@ -320,16 +305,10 @@ def getButtonClicked(x, y):
 def randomColor():
     return tuple(random.randint(0, 255) for _ in range(3))
 
-
 # избирање на нова посветла боја
 def brighterColor(color):
     return tuple(min(255, c + 30) for c in color)
 
-
-def generateButtonColors():
-    # Generate colors for each button and store them in a list
-    colors = [randomColor() for _ in range(GRID_WIDTH * GRID_HEIGHT)]
-    return colors
 
 if __name__ == "__main__":
     main()
