@@ -8,15 +8,12 @@ from pygame.locals import *
 
 FPS = 30
 WINDOWWIDTH = 640
-WINDOWHEIGHT = 500
+WINDOWHEIGHT = 480
 FLASHSPEED = 500 # in milliseconds
 FLASHDELAY = 200 # in milliseconds
 BUTTONSIZE = 200
 BUTTONGAPSIZE = 20
-# Promena na TIMEOUT vo vtoroto baranje
-TIMEOUT = 5 # seconds before game over if no button is pushed.
-
-
+TIMEOUT = 4 # seconds before game over if no button is pushed.
 
 #                R    G    B
 WHITE        = (255, 255, 255)
@@ -35,9 +32,6 @@ bgColor = BLACK
 XMARGIN = int((WINDOWWIDTH - (2 * BUTTONSIZE) - BUTTONGAPSIZE) / 2)
 YMARGIN = int((WINDOWHEIGHT - (2 * BUTTONSIZE) - BUTTONGAPSIZE) / 2)
 
-#XMARGIN = int((WINDOWWIDTH - (BUTTONSIZE * WIDTH + (WIDTH - 1))) / 2)
-#YMARGIN = int((WINDOWHEIGHT - (BUTTONSIZE * HEIGHT + (HEIGHT - 1))) / 2)
-
 # Rect objects for each of the four buttons
 YELLOWRECT = pygame.Rect(XMARGIN, YMARGIN, BUTTONSIZE, BUTTONSIZE)
 BLUERECT   = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN, BUTTONSIZE, BUTTONSIZE)
@@ -45,7 +39,7 @@ REDRECT    = pygame.Rect(XMARGIN, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSI
 GREENRECT  = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4, TIMEOUT
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4
 
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
@@ -68,7 +62,6 @@ def main():
     currentStep = 0 # the color the player must push next
     lastClickTime = 0 # timestamp of the player's last button push
     score = 0
-
     # when False, the pattern is playing. when True, waiting for the player to click a colored button:
     waitingForInput = False
 
@@ -105,14 +98,7 @@ def main():
             # play the pattern
             pygame.display.update()
             pygame.time.wait(1000)
-
-            # Inicijaliziranje na pattern - ot na prazna lista
-            pattern = []
-
-            # For - ciklus za prvoto baranje
-            for i in range(0, score + 1):
-                pattern.append(random.choice((YELLOW, BLUE, RED, GREEN)))
-
+            pattern.append(random.choice((YELLOW, BLUE, RED, GREEN)))
             for button in pattern:
                 flashButtonAnimation(button)
                 pygame.time.wait(FLASHDELAY)
@@ -129,12 +115,6 @@ def main():
                     # pushed the last button in the pattern
                     changeBackgroundAnimation()
                     score += 1
-                    # Postavuvanje if - uslov za vtoroto baranje
-                    if score % 10 == 0 and TIMEOUT != 3:
-                        TIMEOUT -= 1
-
-
-
                     waitingForInput = False
                     currentStep = 0 # reset back to first step
 
