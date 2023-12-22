@@ -117,7 +117,7 @@ def main():
             waitingForInput = True
 
             # проверка за дали е време таблата да се зголеми
-            if score >= 4:
+            if score >= 10:
                 GRID_WIDTH = 3
                 GRID_HEIGHT = 3
                 WINDOWWIDTH = 640 + (GRID_WIDTH - 2) * (BUTTONSIZE + BUTTONGAPSIZE)

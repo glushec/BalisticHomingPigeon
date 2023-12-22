@@ -7,26 +7,30 @@ import random, sys, time, pygame
 from pygame.locals import *
 
 FPS = 30
-WINDOWWIDTH = 640
-WINDOWHEIGHT = 480
-FLASHSPEED = 500 # in milliseconds
-FLASHDELAY = 200 # in milliseconds
+WINDOWWIDTH = 1200
+WINDOWHEIGHT = 900
+FLASHSPEED = 500  # in milliseconds
+FLASHDELAY = 200  # in milliseconds
 BUTTONSIZE = 200
 BUTTONGAPSIZE = 20
-TIMEOUT = 4 # seconds before game over if no button is pushed.
+
+# изменет тајмаут на 5 секунди на почеток
+TIMEOUT = 5  # seconds before game over if no button is pushed.
+# броење на измените на листата
+patternChanges = 0
 
 #                R    G    B
-WHITE        = (255, 255, 255)
-BLACK        = (  0,   0,   0)
-BRIGHTRED    = (255,   0,   0)
-RED          = (155,   0,   0)
-BRIGHTGREEN  = (  0, 255,   0)
-GREEN        = (  0, 155,   0)
-BRIGHTBLUE   = (  0,   0, 255)
-BLUE         = (  0,   0, 155)
-BRIGHTYELLOW = (255, 255,   0)
-YELLOW       = (155, 155,   0)
-DARKGRAY     = ( 40,  40,  40)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+BRIGHTRED = (255, 0, 0)
+RED = (155, 0, 0)
+BRIGHTGREEN = (0, 255, 0)
+GREEN = (0, 155, 0)
+BRIGHTBLUE = (0, 0, 255)
+BLUE = (0, 0, 155)
+BRIGHTYELLOW = (255, 255, 0)
+YELLOW = (155, 155, 0)
+DARKGRAY = (40, 40, 40)
 bgColor = BLACK
 
 XMARGIN = int((WINDOWWIDTH - (2 * BUTTONSIZE) - BUTTONGAPSIZE) / 2)
@@ -34,13 +38,17 @@ YMARGIN = int((WINDOWHEIGHT - (2 * BUTTONSIZE) - BUTTONGAPSIZE) / 2)
 
 # Rect objects for each of the four buttons
 YELLOWRECT = pygame.Rect(XMARGIN, YMARGIN, BUTTONSIZE, BUTTONSIZE)
-BLUERECT   = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN, BUTTONSIZE, BUTTONSIZE)
-REDRECT    = pygame.Rect(XMARGIN, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
-GREENRECT  = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
+BLUERECT = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN, BUTTONSIZE, BUTTONSIZE)
+REDRECT = pygame.Rect(XMARGIN, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
+GREENRECT = pygame.Rect(XMARGIN + BUTTONSIZE + BUTTONGAPSIZE, YMARGIN + BUTTONSIZE + BUTTONGAPSIZE, BUTTONSIZE, BUTTONSIZE)
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, BEEP1, BEEP2, BEEP3, BEEP4, patternChanges, GRID_WIDTH, GRID_HEIGHT, TIMEOUT, WINDOWWIDTH, WINDOWHEIGHT, XMARGIN, YMARGIN, YELLOWRECT, BLUERECT, REDRECT, GREENRECT, BUTTON_COLORS
 
+    GRID_WIDTH = 2  # Set the initial grid width
+    GRID_HEIGHT = 2  # Set the initial grid height
+    BUTTON_COLORS = generateButtonColors()
+    
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
@@ -99,13 +107,31 @@ def main():
             pygame.display.update()
             pygame.time.wait(1000)
             pattern.append(random.choice((YELLOW, BLUE, RED, GREEN)))
+            # се зголемуваат измените на листата
+            patternChanges += 1
+
+            # нова проверка за тоа дали е број деллив со 10
+            if patternChanges % 10 == 0:
+                TIMEOUT = max(1, TIMEOUT - 1)
             for button in pattern:
                 flashButtonAnimation(button)
                 pygame.time.wait(FLASHDELAY)
             waitingForInput = True
+
+            # проверка за дали е време таблата да се зголеми
+            if score >= 10:
+                GRID_WIDTH = 3
+                GRID_HEIGHT = 3
+                WINDOWWIDTH = 640 + (GRID_WIDTH - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
+                WINDOWHEIGHT = 480 + (GRID_HEIGHT - 2) * (BUTTONSIZE + BUTTONGAPSIZE)
+                BUTTON_COLORS = generateButtonColors()
+
         else:
-            # wait for the player to enter buttons
-            if clickedButton and clickedButton == pattern[currentStep]:
+            # чување на обратниот редослед
+            reversedPattern = list(reversed(pattern))
+
+            # изменета проверка со новата листа
+            if clickedButton and clickedButton == reversedPattern[currentStep]:
                 # pushed the correct button
                 flashButtonAnimation(clickedButton)
                 currentStep += 1
@@ -116,9 +142,13 @@ def main():
                     changeBackgroundAnimation()
                     score += 1
                     waitingForInput = False
-                    currentStep = 0 # reset back to first step
+                    currentStep = 0  # reset back to first step
 
-            elif (clickedButton and clickedButton != pattern[currentStep]) or (currentStep != 0 and time.time() - TIMEOUT > lastClickTime):
+            # изменета проверка со новата листа
+            elif (
+                (clickedButton and clickedButton != reversedPattern[currentStep])
+                or (currentStep != 0 and time.time() - TIMEOUT > lastClickTime)
+            ):
                 # pushed the incorrect button, or has timed out
                 gameOverAnimation()
                 # reset the variables for a new game:
@@ -182,10 +212,15 @@ def flashButtonAnimation(color, animationSpeed=50):
 
 
 def drawButtons():
-    pygame.draw.rect(DISPLAYSURF, YELLOW, YELLOWRECT)
-    pygame.draw.rect(DISPLAYSURF, BLUE,   BLUERECT)
-    pygame.draw.rect(DISPLAYSURF, RED,    REDRECT)
-    pygame.draw.rect(DISPLAYSURF, GREEN,  GREENRECT)
+    for row in range(GRID_HEIGHT):
+        for col in range(GRID_WIDTH):
+            buttonRect = pygame.Rect(
+                XMARGIN + col * (BUTTONSIZE + BUTTONGAPSIZE),
+                YMARGIN + row * (BUTTONSIZE + BUTTONGAPSIZE),
+                BUTTONSIZE,
+                BUTTONSIZE,
+            )
+            pygame.draw.rect(DISPLAYSURF, BUTTON_COLORS[row * GRID_WIDTH + col], buttonRect)
 
 
 def changeBackgroundAnimation(animationSpeed=40):
@@ -236,16 +271,30 @@ def gameOverAnimation(color=WHITE, animationSpeed=50):
 
 
 def getButtonClicked(x, y):
-    if YELLOWRECT.collidepoint( (x, y) ):
+    if YELLOWRECT.collidepoint((x, y)):
         return YELLOW
-    elif BLUERECT.collidepoint( (x, y) ):
+    elif BLUERECT.collidepoint((x, y)):
         return BLUE
-    elif REDRECT.collidepoint( (x, y) ):
+    elif REDRECT.collidepoint((x, y)):
         return RED
-    elif GREENRECT.collidepoint( (x, y) ):
+    elif GREENRECT.collidepoint((x, y)):
         return GREEN
     return None
 
 
-if __name__ == '__main__':
+# избирање на нова боја
+def randomColor():
+    return tuple(random.randint(0, 255) for _ in range(3))
+
+# избирање на нова посветла боја
+def brighterColor(color):
+    return tuple(min(255, c + 30) for c in color)
+
+
+def generateButtonColors():
+    # Generate colors for each button and store them in a list
+    colors = [randomColor() for _ in range(GRID_WIDTH * GRID_HEIGHT)]
+    return colors
+
+if __name__ == "__main__":
     main()
